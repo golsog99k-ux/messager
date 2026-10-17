@@ -2,7 +2,7 @@
 
 Запуск (messenger.html должен лежать рядом с bot.py):
     pip install aiogram
-    BOT_TOKEN=... MESSENGER_URL=https://публичный-адрес-этого-сервера python bot.py
+    BOT_TOKEN=... python bot.py   (на Render больше ничего задавать не нужно)
 """
 import asyncio
 import hashlib
@@ -25,7 +25,9 @@ from aiogram.types import (
 from aiohttp import web
 
 BOT_TOKEN = os.environ["BOT_TOKEN"]
-MESSENGER_URL = os.environ["MESSENGER_URL"]            # публичный https-адрес этого сервера
+PAGE_URL = os.getenv("PAGE_URL", "https://golsog99k-ux.github.io/messager/messenger.html")
+_render_url = os.getenv("RENDER_EXTERNAL_URL")  # на Render задаётся автоматически: адрес этого сервера
+MESSENGER_URL = f"{PAGE_URL}?api={_render_url}" if _render_url else os.getenv("MESSENGER_URL", PAGE_URL)
 PORT = int(os.getenv("PORT", "8080"))
 ALLOWED_ORIGIN = os.getenv("ALLOWED_ORIGIN", "https://golsog99k-ux.github.io")  # откуда страница может обращаться к серверу
 WELCOME_STARS = int(os.getenv("WELCOME_STARS", "5"))   # бонус новому пользователю
