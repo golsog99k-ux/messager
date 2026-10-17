@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Мессенджер</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;700&display=swap">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#e8edf1;--panel:#fff;--ink:#16212b;--mute:#6a7a88;--line:#dde4ea;--me:#1f5f8b;--them:#fff;--accent:#f2b84b;--accent-ink:#3b2a00;--hover:#f1f5f8;--sel:#e3eef6;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f161d;--panel:#17212b;--ink:#e6edf3;--mute:#8b9bab;--line:#25323f;--me:#2b7fb8;--them:#1f2c38;--hover:#1d2a36;--sel:#223647;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f161d;--panel:#17212b;--ink:#e6edf3;--mute:#8b9bab;--line:#25323f;--me:#2b7fb8;--them:#1f2c38;--hover:#1d2a36;--sel:#223647;color-scheme:dark}
+*{box-sizing:inherit}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.4 Onest,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{display:grid;grid-template-columns:340px 1fr;height:100%;max-width:1100px;margin:0 auto;background:var(--panel);box-shadow:0 0 0 1px var(--line)}
+aside{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line)}
+.top{display:flex;align-items:center;gap:8px;padding:14px 16px 8px}
+.top h1{font-size:20px;margin:0;flex:1;font-weight:700}
+.ic{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:none}
+.ic:hover{background:var(--hover)}
+.pill{padding:6px 12px;border-radius:16px;background:var(--hover);font-weight:600}
+#shop{margin:0 16px 8px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+#pur{color:var(--mute);font-size:14px;margin-bottom:8px}
+.packs{display:flex;gap:8px;flex-wrap:wrap}
+.pack{padding:8px 12px;border-radius:12px;background:var(--accent);color:var(--accent-ink);font-weight:600}
+#err{position:fixed;z-index:5;left:12px;right:12px;max-width:480px;margin:0 auto;bottom:calc(76px + env(safe-area-inset-bottom,0px));padding:10px 14px;border-radius:12px;background:#f8d7d3;color:#5c1a12;font-size:14px}
+#q{margin:4px 16px 10px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font:inherit}
+#list{flex:1;overflow-y:auto}
+.none{margin:16px;color:var(--mute)}
+.row{display:flex;gap:12px;width:100%;padding:10px 16px;text-align:left;align-items:center}
+.row:hover{background:var(--hover)}
+.row.on{background:var(--sel)}
+.av{flex:none;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700}
+.rb{flex:1;min-width:0}
+.l1,.l2{display:flex;gap:8px;justify-content:space-between;align-items:center}
+.nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tm{font-size:12px;color:var(--mute);flex:none}
+.pv{color:var(--mute);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bd{background:var(--accent);color:var(--accent-ink);font-size:12px;font-weight:700;border-radius:10px;min-width:20px;padding:1px 6px;text-align:center;flex:none}
+main{display:flex;flex-direction:column;min-height:0;min-width:0;background:var(--bg)}
+#empty{flex:1;display:grid;place-items:center;color:var(--mute);padding:24px;text-align:center}
+#pane{display:flex;flex-direction:column;flex:1;min-height:0}
+#pane[hidden],#empty[hidden]{display:none}
+.hd{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
+.hd .av{width:40px;height:40px}
+#hname{font-weight:600}
+#back{display:none;margin-left:-8px}
+#msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:6px}
+.msg{max-width:78%;padding:8px 12px 6px;border-radius:16px;overflow-wrap:anywhere}
+.msg.me{align-self:flex-end;background:var(--me);color:#fff;border-bottom-right-radius:4px}
+.msg.them{align-self:flex-start;background:var(--them);border-bottom-left-radius:4px}
+.tx{white-space:pre-wrap}
+.msg time{display:block;text-align:right;font-size:11px;opacity:.7;margin-top:2px}
+form{display:flex;gap:8px;align-items:flex-end;padding:10px 12px;background:var(--panel);border-top:1px solid var(--line)}
+#in{flex:1;resize:none;max-height:120px;padding:10px 14px;border:1px solid var(--line);border-radius:18px;background:var(--bg);color:var(--ink);font:inherit;line-height:1.35}
+#send{width:42px;height:42px;border-radius:50%;background:var(--me);color:#fff;display:grid;place-items:center;flex:none}
+@media (max-width:720px){.app{grid-template-columns:1fr}main{display:none}.app.open aside{display:none}.app.open main{display:flex}#back{display:grid}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <aside>
+    <div class="top">
+      <h1>Чаты</h1>
+      <button class="pill" id="st" aria-label="Баланс звёзд">⭐ 0</button>
+      <button class="ic" id="th" aria-label="Сменить тему">◐</button>
+    </div>
+    <div id="shop" hidden>
+      <div id="pur"></div>
+      <div class="packs" id="packs"></div>
+    </div>
+    <input id="q" type="search" placeholder="Поиск по чатам" autocomplete="off">
+    <div id="list"></div>
+  </aside>
+  <main>
+    <div id="empty">Выберите чат слева, чтобы начать переписку</div>
+    <section id="pane" hidden>
+      <header class="hd">
+        <button class="ic" id="back" aria-label="К списку чатов"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <span class="av" id="hav"></span>
+        <div id="hname"></div>
+      </header>
+      <div id="msgs" aria-live="polite"></div>
+      <form id="f">
+        <textarea id="in" rows="1" placeholder="Сообщение" aria-label="Сообщение"></textarea>
+        <button id="send" aria-label="Отправить"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 11.5 21 3l-5 18-4.5-7z"/></svg></button>
+      </form>
+    </section>
+  </main>
+</div>
+<div id="err" hidden>Нет связи с сервером. Откройте мессенджер через бота в Telegram.</div>
+<script>
+const $=s=>document.querySelector(s);
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const tg=window.Telegram&&Telegram.WebApp, INIT=tg?tg.initData:'', PACKS=[50,100,250];
+if(tg){tg.ready();tg.expand()}
+let me=null,users=[],msgs=[],last=0,active=null,first=true,seen={};
+const ids=new Set();
+try{seen=JSON.parse(localStorage.getItem('seen')||'{}')}catch(e){}
+const saveSeen=()=>{try{localStorage.setItem('seen',JSON.stringify(seen))}catch(e){}};
+const fmt=ts=>new Date(ts).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+const convo=id=>msgs.filter(m=>m.sender===id||m.recipient===id);
+const unread=id=>convo(id).filter(m=>m.sender===id&&m.id>(seen[id]||0)).length;
+const initial=n=>(n||'?')[0].toUpperCase();
+const hue=id=>'hsl('+(id*47%360)+',45%,42%)';
+function markSeen(id){const c=convo(id).filter(m=>m.sender===id);if(c.length){seen[id]=c[c.length-1].id;saveSeen()}}
+
+async function api(p,o){
+ const r=await fetch(p,Object.assign({headers:{'X-Init-Data':INIT,'Content-Type':'application/json'}},o));
+ if(!r.ok) throw new Error(r.status);
+ return r.json();
+}
+
+function renderMe(){
+ if(!me) return;
+ $('#st').textContent='⭐ '+me.stars;
+ $('#pur').textContent='Покупка: '+(me.purchased?'есть':'нет');
+}
+
+function renderList(){
+ const q=$('#q').value.trim().toLowerCase(), box=$('#list');
+ box.textContent='';
+ const rows=users.filter(u=>u.name.toLowerCase().includes(q))
+  .map(u=>{const c=convo(u.id);return{u,l:c[c.length-1]}})
+  .sort((a,b)=>(b.l?b.l.ts:0)-(a.l?a.l.ts:0)||a.u.name.localeCompare(b.u.name));
+ if(!rows.length){
+  box.append(el('p','none',users.length?'Ничего не найдено':'Пока здесь никого нет. Пригласите друзей в бота, и они появятся в списке.'));
+  return;
+ }
+ rows.forEach(({u,l})=>{
+  const row=el('button','row'+(active===u.id?' on':''));
+  const av=el('span','av',initial(u.name)); av.style.background=hue(u.id);
+  const l1=el('div','l1'); l1.append(el('span','nm',u.name)); if(l) l1.append(el('span','tm',fmt(l.ts)));
+  const l2=el('div','l2'); l2.append(el('span','pv',l?(l.sender===me.id?'Вы: ':'')+l.text:'Нет сообщений'));
+  const n=unread(u.id); if(n) l2.append(el('span','bd',n));
+  const rb=el('div','rb'); rb.append(l1,l2);
+  row.append(av,rb); row.onclick=()=>openChat(u.id); box.append(row);
+ });
+}
+
+function renderChat(){
+ const u=users.find(x=>x.id===active);
+ $('#empty').hidden=!!u; $('#pane').hidden=!u;
+ if(!u) return;
+ $('#hav').textContent=initial(u.name); $('#hav').style.background=hue(u.id);
+ $('#hname').textContent=u.name;
+ const box=$('#msgs'); box.textContent='';
+ convo(u.id).forEach(m=>{
+  const b=el('div','msg '+(m.sender===me.id?'me':'them'));
+  b.append(el('div','tx',m.text),el('time','',fmt(m.ts)));
+  box.append(b);
+ });
+ box.scrollTop=box.scrollHeight;
+}
+
+const render=()=>{renderMe();renderList();renderChat()};
+
+async function pull(){
+ try{
+  const d=await api('/api/state?after='+last);
+  const n=users.length;
+  me=d.me; users=d.users;
+  d.messages.forEach(m=>{if(!ids.has(m.id)){ids.add(m.id);msgs.push(m)}last=Math.max(last,m.id)});
+  if(active!=null) markSeen(active);
+  $('#err').hidden=true;
+  if(first||d.messages.length||users.length!==n) render(); else renderMe();
+  first=false;
+ }catch(e){$('#err').hidden=false}
+}
+
+function openChat(id){
+ active=id; markSeen(id);
+ $('#app').classList.add('open'); render();
+ if(matchMedia('(min-width:721px)').matches) $('#in').focus();
+}
+
+async function send(){
+ const i=$('#in'), t=i.value.trim();
+ if(!t||active==null) return;
+ i.value=''; grow();
+ try{
+  await api('/api/send',{method:'POST',body:JSON.stringify({to:active,text:t})});
+  await pull();
+ }catch(e){i.value=t; grow(); $('#err').hidden=false}
+}
+
+async function buy(n){
+ try{
+  const d=await api('/api/invoice',{method:'POST',body:JSON.stringify({amount:n})});
+  tg.openInvoice(d.link,s=>{if(s==='paid'){$('#shop').hidden=true;setTimeout(pull,1500)}});
+ }catch(e){$('#err').hidden=false}
+}
+
+function grow(){const i=$('#in');i.style.height='auto';i.style.height=Math.min(i.scrollHeight,120)+'px'}
+
+PACKS.forEach(n=>{const b=el('button','pack','Купить '+n+' ⭐');b.onclick=()=>buy(n);$('#packs').append(b)});
+$('#st').onclick=()=>{$('#shop').hidden=!$('#shop').hidden};
+$('#f').onsubmit=e=>{e.preventDefault();send()};
+$('#in').addEventListener('input',grow);
+$('#in').addEventListener('keydown',e=>{
+ if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing&&matchMedia('(pointer:fine)').matches){e.preventDefault();send()}
+});
+$('#q').addEventListener('input',()=>{if(me)renderList()});
+$('#back').onclick=()=>{active=null;$('#app').classList.remove('open');if(me)render()};
+
+const root=document.documentElement, TK='messenger-theme';
+try{const v=localStorage.getItem(TK);if(v)root.dataset.theme=v}catch(e){}
+$('#th').onclick=()=>{
+ const dark=root.dataset.theme?root.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
+ const v=dark?'light':'dark';
+ root.dataset.theme=v;
+ try{localStorage.setItem(TK,v)}catch(e){}
+};
+
+pull();
+setInterval(()=>{if(!document.hidden)pull()},2000);
+</script>
+</body>
+  </html>
+  
